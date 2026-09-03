@@ -3,6 +3,197 @@
   "nodes": [
     {
       "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "7bdf64ca-7782-4b18-a260-0549f639d48a",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -240,
+        -112
+      ],
+      "webhookId": "05294aca-0082-4cbd-a715-c43f6554996e",
+      "credentials": {
+        "telegramApi": {
+          "id": "4nwjLNLIhukW7TeO",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "# ROL\nSos un asistente virtual corporativo especializado en el triage y derivación de consultas de clientes. Tu tono es profesional, conciso y cordial.\n# ÁMBITO\nOperás exclusivamente en la recepción inicial de mensajes para una empresa de servicios. Atendés únicamente cuestiones vinculadas a:\n1. Consultas generales de producto o servicio.\n2. Ventas y solicitudes comerciales/cotizaciones.\n3. Facturación, pagos y estado de cuenta.\n# OBJETIVO\n1. Analizar el mensaje del usuario y clasificar la intención en una de las siguientes categorías exactas: 'consulta', 'venta', 'facturacion' o 'ninguna'.\n2. Registrar inmediatamente la clasificación utilizando la herramienta conectada (Google Sheets).\n3. Brindar una respuesta breve y clara al usuario confirmando la recepción o derivación de su caso.\n4. Generar la salida de acuerdo al Output Parser: un objeto JSON con los campos \"categoria\" (uno de: consulta, venta, facturacion, ninguna) y \"respuesta\" (texto para el usuario).\n# REGLAS Y ESCALAMIENTO\n- Si la intención del usuario es ambigua o no encaja con las categorías principales, clasificá como 'ninguna' y derivá a atención humana.\n- Antes de emitir tu respuesta final, ejecutá siempre la herramienta de registro correspondiente.\n# PROHIBICIONES EXPLÍCITAS\n- PROHIBIDO inventar información sobre precios, contratos, saldos o políticas que no hayan sido provistas.\n- PROHIBIDO confirmar transacciones, procesar pagos o prometer reembolsos de forma directa.\n- PROHIBIDO responder o entablar conversación sobre temas fuera del ámbito corporativo (temas personales, política, programación, etc.).\n- PROHIBIDO utilizar giros de lenguaje inclusivo.",
+          "maxIterations": 5
+        }
+      },
+      "id": "ccff42b8-4d27-4736-8e0e-1182bc3e6826",
+      "name": "Agente de Triage  Clasificador",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -64,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "ac85eda3-bc1f-4e29-9435-dac6b6d0af8c",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -160,
+        128
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "LPFKpYkqqHeazwxA",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Usá esta herramienta para registrar el resultado del triage cuando clasifiques la intención del usuario. \nCategorías permitidas: 'consulta', 'venta', 'facturacion' o 'ninguna'.\nDebes pasar los campos: Fecha, Usuario, Categoria y Resumen de la consulta.",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "13b_6dfLOdsIkT7GZvH9OW_trhA_m5pek6i4LsoN70sQ",
+          "mode": "list",
+          "cachedResultName": "Triage_interacciones",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13b_6dfLOdsIkT7GZvH9OW_trhA_m5pek6i4LsoN70sQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13b_6dfLOdsIkT7GZvH9OW_trhA_m5pek6i4LsoN70sQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha": "={{ $json.message.date }}",
+            "Usuario": "={{ $json.message.chat.username }}",
+            "Categoria": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Categoria', ``, 'string') }}",
+            "Resumen": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Resumen', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Usuario",
+              "displayName": "Usuario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Resumen",
+              "displayName": "Resumen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "7bdb41ae-c985-4f42-82cd-e0c7ce13219d",
+      "name": "Triage_Interacciones",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        0,
+        208
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wnZkbrG8FOc8s3Tl",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"categoria\": { \"type\": \"string\", \"enum\": [\"consulta\", \"venta\", \"facturacion\", \"ninguna\"]},\n    \"respuesta\": { \"type\": \"string\" }\n  },\n  \"required\": [\"categoria\", \"respuesta\"]\n}",
+        "autoFix": true
+      },
+      "id": "4ef94bcb-d60e-407e-b0a5-53c1afd4b76b",
+      "name": "Parser de Salida - Clasificador de mensajes",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BU70UMJ05",
+          "mode": "list",
+          "cachedResultName": "triage_logs"
+        },
+        "text": "=🔔 *Nueva interacción procesada por el Agente de Triage*\n• *Entrada del usuario:* {{ $('Telegram Trigger').item.json.message.text }}\n• *Categoría:* {{ $json.output.categoria }}\n• *Respuesta del agente:* {{ $json.output.respuesta }}\n• *Timestamp:* {{ $now }}",
+        "otherOptions": {}
+      },
+      "id": "ff5d6587-6c13-49d0-b4ff-47e7a632f65a",
+      "name": "Triage Log",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        272,
+        -96
+      ],
+      "webhookId": "92406deb-7f58-4035-a191-0454b4169744",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "8niLVpVQdq9CrWpn",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
         "rules": {
           "values": [
             {
@@ -15,7 +206,7 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "={{ $json.output.categoria }}",
+                    "leftValue": "={{ $('Agente de Triage  Clasificador').item.json.output.categoria }}",
                     "rightValue": "consulta",
                     "operator": {
                       "type": "string",
@@ -40,8 +231,8 @@
                 "conditions": [
                   {
                     "id": "10f8510b-c2ba-41b9-8d9f-6a439eaf6fd1",
-                    "leftValue": "={{ $json.output.categoria }}",
-                    "rightValue": "reclamo",
+                    "leftValue": "={{ $('Agente de Triage  Clasificador').item.json.output.categoria }}",
+                    "rightValue": "venta",
                     "operator": {
                       "type": "string",
                       "operation": "equals"
@@ -51,7 +242,7 @@
                 "combinator": "and"
               },
               "renameOutput": true,
-              "outputKey": "reclamo"
+              "outputKey": "venta"
             },
             {
               "conditions": {
@@ -64,8 +255,8 @@
                 "conditions": [
                   {
                     "id": "7eefe955-5bb4-451c-9ed1-20bcc21dcbfe",
-                    "leftValue": "={{ $json.output.categoria }}",
-                    "rightValue": "venta",
+                    "leftValue": "={{ $('Agente de Triage  Clasificador').item.json.output.categoria }}",
+                    "rightValue": "facturacion",
                     "operator": {
                       "type": "string",
                       "operation": "equals"
@@ -75,7 +266,7 @@
                 "combinator": "and"
               },
               "renameOutput": true,
-              "outputKey": "venta"
+              "outputKey": "facturacion"
             }
           ]
         },
@@ -83,94 +274,115 @@
           "fallbackOutput": "extra"
         }
       },
+      "id": "cc7e76be-7a27-4936-b7df-eca5a686d909",
+      "name": "Switch por categoria",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        256,
-        -128
-      ],
-      "id": "cc7e76be-7a27-4936-b7df-eca5a686d909",
-      "name": "Switch por categoria"
+        528,
+        -112
+      ]
     },
     {
       "parameters": {
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
-      "typeVersion": 1.4,
-      "position": [
-        -304,
-        -96
-      ],
-      "id": "50579eb5-f27a-4cc3-857e-e512caf35ce4",
-      "name": "Trigger - Solicitud del cliente",
-      "webhookId": "2b80ca0c-cb7c-4838-a330-59a4a856a25b"
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "={{ $json.chatInput }}",
-        "hasOutputParser": true,
-        "options": {
-          "systemMessage": "Sos un clasificador de mensajes de atencion al cliente. Tu unica tarea es leer el mensaje del usuario y clasificarlo en EXACTAMENTE una de estas tres categorias: consulta, reclamo, venta.\n\nDefiniciones:\n- consulta: el usuario pide informacion, horarios, como hacer algo, dudas generales.\n- reclamo: el usuario expresa una queja, un problema, algo que salio mal, insatisfaccion.\n- venta: el usuario quiere comprar, pide precios, cotizacion, disponibilidad de un producto.\n\nREGLAS DE SALIDA (obligatorias):\n1. Responde UNICAMENTE con un objeto JSON valido. Nada de texto antes ni despues.\n2. No uses bloques de codigo ni markdown.\n3. El JSON debe tener exactamente esta forma: {\"categoria\": \"consulta\"}\n4. El valor de categoria solo puede ser: consulta, reclamo o venta. En minuscula, sin acentos.",
-          "maxIterations": 2
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $('Agente de Triage  Clasificador').item.json.output.respuesta }}",
+        "additionalFields": {
+          "appendAttribution": false
         }
       },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
+      "id": "74775f92-2bb3-40ab-8b76-f39394c4e1d4",
+      "name": "Respuesta Consulta",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
       "position": [
-        -64,
-        -96
+        848,
+        -240
       ],
-      "id": "ccff42b8-4d27-4736-8e0e-1182bc3e6826",
-      "name": "Agente de Triage  Clasificador"
-    },
-    {
-      "parameters": {
-        "model": "openai/gpt-oss-20b",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
-      "typeVersion": 1,
-      "position": [
-        -96,
-        112
-      ],
-      "id": "03fb28d7-be92-4a11-95a9-ff65eaa16382",
-      "name": "Groq - Clasificador",
+      "webhookId": "f8b3348c-890a-4c60-8258-c42d7ec40724",
       "credentials": {
-        "groqApi": {
-          "id": "GpAROU39IydOsSaH",
-          "name": "Groq account"
+        "telegramApi": {
+          "id": "4nwjLNLIhukW7TeO",
+          "name": "Telegram account"
         }
       }
     },
     {
       "parameters": {
-        "schemaType": "manual",
-        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"categoria\": { \"type\": \"string\", \"enum\": [\"consulta\", \"reclamo\", \"venta\"] }\n  },\n  \"required\": [\"categoria\"]\n}"
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $('Agente de Triage  Clasificador').item.json.output.respuesta }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
       },
-      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
-      "typeVersion": 1.3,
+      "id": "c6a466d2-cf97-4c8e-b945-f05992ce0f53",
+      "name": "Respuesta Venta",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
       "position": [
-        96,
-        112
+        816,
+        -48
       ],
-      "id": "4ef94bcb-d60e-407e-b0a5-53c1afd4b76b",
-      "name": "Parser de Salida - Clasificador de mensajes"
+      "webhookId": "07d0ff9d-cb9a-4e17-91fe-d9d04d995493",
+      "credentials": {
+        "telegramApi": {
+          "id": "4nwjLNLIhukW7TeO",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $('Agente de Triage  Clasificador').item.json.output.respuesta }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "ea73b8b6-a7ee-42ae-9311-0f942b392936",
+      "name": "Respuesta Facturacion",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        848,
+        144
+      ],
+      "webhookId": "005c6cb2-c74a-4391-a2fb-6ad76d81790c",
+      "credentials": {
+        "telegramApi": {
+          "id": "4nwjLNLIhukW7TeO",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $('Agente de Triage  Clasificador').item.json.output.respuesta }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "123c1173-1c84-4834-86af-685ab9da401e",
+      "name": "Respuesta Ninguna",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        832,
+        384
+      ],
+      "webhookId": "a115f5e8-070e-4432-accb-5a011718ffb6",
+      "credentials": {
+        "telegramApi": {
+          "id": "4nwjLNLIhukW7TeO",
+          "name": "Telegram account"
+        }
+      }
     }
   ],
   "pinData": {},
   "connections": {
-    "Switch por categoria": {
-      "main": [
-        [],
-        [],
-        [],
-        []
-      ]
-    },
-    "Trigger - Solicitud del cliente": {
+    "Telegram Trigger": {
       "main": [
         [
           {
@@ -185,19 +397,35 @@
       "main": [
         [
           {
-            "node": "Switch por categoria",
+            "node": "Triage Log",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Groq - Clasificador": {
+    "Google Gemini Chat Model": {
       "ai_languageModel": [
         [
           {
             "node": "Agente de Triage  Clasificador",
             "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Parser de Salida - Clasificador de mensajes",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Triage_Interacciones": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente de Triage  Clasificador",
+            "type": "ai_tool",
             "index": 0
           }
         ]
@@ -213,6 +441,49 @@
           }
         ]
       ]
+    },
+    "Triage Log": {
+      "main": [
+        [
+          {
+            "node": "Switch por categoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch por categoria": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respuesta Venta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respuesta Facturacion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respuesta Ninguna",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -221,7 +492,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "13c4f52d-befc-4b19-bd66-31643245a48e",
+  "versionId": "ed69ea0a-9cfd-4362-a238-979becbde92e",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "5bd91de9a9e3ca3738edab574228d588b043379ea8aa677f7f7e27b168c5e87f"
