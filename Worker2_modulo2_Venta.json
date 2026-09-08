@@ -1,0 +1,257 @@
+{
+  "name": "Worker2_modulo2_Venta",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "06f5d854-67c6-4c56-89dd-319f4f15dcbb",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "bc396ec3-6a28-40f9-bafe-90a9e2435f05",
+              "name": "data",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0caa8dc3-9211-4332-9530-3be6a5b1793b",
+      "name": "Salida - Exito"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -832,
+        112
+      ],
+      "id": "2e6b612e-36a8-4ae3-ba30-35fa7c443423",
+      "name": "▶️ Execute Workflow Trigger · Entrada del Worker"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        368,
+        64
+      ],
+      "id": "c19c4616-2435-4314-8e61-db5f16dbe8cd",
+      "name": "🏁 Salida del Worker"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "06f5d854-67c6-4c56-89dd-319f4f15dcbb",
+              "name": "status",
+              "value": "error",
+              "type": "string"
+            },
+            {
+              "id": "bc396ec3-6a28-40f9-bafe-90a9e2435f05",
+              "name": "data",
+              "value": "={{ { motivo: $json.error?.message || 'Error desconocido en Worker ', cliente_recibido: $('▶️ Execute Workflow Trigger · Entrada del Worker').item.json.referencia || null } }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        0,
+        192
+      ],
+      "id": "fa5d4c65-2158-4da8-a11a-49cae083a89a",
+      "name": "Salida - Erro"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1CwJ8QDuPhgvzGK9_UvMkygd3pPZXOBP6Fb-RiFKsUs4",
+          "mode": "list",
+          "cachedResultName": "Stock_Productos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CwJ8QDuPhgvzGK9_UvMkygd3pPZXOBP6Fb-RiFKsUs4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1059678295,
+          "mode": "list",
+          "cachedResultName": "Stock Productos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CwJ8QDuPhgvzGK9_UvMkygd3pPZXOBP6Fb-RiFKsUs4/edit#gid=1059678295"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -352,
+        352
+      ],
+      "id": "9870481e-c5c2-4236-8441-26e6411397a5",
+      "name": "Stock _ Precios",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wnZkbrG8FOc8s3Tl",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        320
+      ],
+      "id": "bafb0295-9096-47a6-addd-8c0cd2dfa8de",
+      "name": "AI - Asistente Ventas",
+      "credentials": {
+        "groqApi": {
+          "id": "GpAROU39IydOsSaH",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Cliente:{{ $json.id_cliente }}; consulta:{{ $json.producto }};contexto: {{ $json.contexto_breve }}",
+        "options": {
+          "systemMessage": "=Sos el asistente de ventas de la empresa. Respondes consultas usando UNICAMENTE la informacion de la base de conocimiento que te paso abajo.\n\nREGLAS:\n1. Si la respuesta esta en la base de conocimiento, respondela de forma clara y amable.\n2. Si la pregunta NO esta cubierta por la base, decis exactamente: 'No tengo esa informacion a mano, pero un asesor te va a ayudar a la brevedad.' No inventes datos.\n3. Responde en español rioplatense, breve y cordial. Texto plano, sin markdown.\n\nBASE DE CONOCIMIENTO: Google Sheet conectada en la entrada Tool. Puedes utilizar más de una columna de ser necesario"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -528,
+        112
+      ],
+      "id": "2640aae0-64ce-42dc-be4c-e7203b497ae9",
+      "name": "Agente Ventas",
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "pinData": {
+    "▶️ Execute Workflow Trigger · Entrada del Worker": [
+      {
+        "json": {
+          "categoria": "venta",
+          "id_cliente": 8263992155,
+          "producto": "hola, quiero comprar una notebook",
+          "contexto_breve": "Lead calificado por el Agente de Triaje como oportunidad comercial (venta)"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Salida - Exito": {
+      "main": [
+        [
+          {
+            "node": "🏁 Salida del Worker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "▶️ Execute Workflow Trigger · Entrada del Worker": {
+      "main": [
+        [
+          {
+            "node": "Agente Ventas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salida - Erro": {
+      "main": [
+        [
+          {
+            "node": "🏁 Salida del Worker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stock _ Precios": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Ventas",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI - Asistente Ventas": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente Ventas",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente Ventas": {
+      "main": [
+        [
+          {
+            "node": "Salida - Exito",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Salida - Erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "888df709-7a87-4ccf-b7a9-2266203cdb1d",
+  "meta": {
+    "instanceId": "5bd91de9a9e3ca3738edab574228d588b043379ea8aa677f7f7e27b168c5e87f"
+  },
+  "nodeGroups": [],
+  "id": "20Da9e0LXvxg0XK1",
+  "tags": []
+}

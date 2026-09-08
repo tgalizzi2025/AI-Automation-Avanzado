@@ -1,0 +1,257 @@
+{
+  "name": "Worker1_modulo2_Consultas",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "06f5d854-67c6-4c56-89dd-319f4f15dcbb",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "bc396ec3-6a28-40f9-bafe-90a9e2435f05",
+              "name": "data",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1152,
+        -160
+      ],
+      "id": "7fe89054-f44d-4c0e-9451-9e93ece45b81",
+      "name": "Salida - Exito"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "06f5d854-67c6-4c56-89dd-319f4f15dcbb",
+              "name": "status",
+              "value": "error",
+              "type": "string"
+            },
+            {
+              "id": "bc396ec3-6a28-40f9-bafe-90a9e2435f05",
+              "name": "data",
+              "value": "={{ { motivo: $json.error?.message || 'Error desconocido en Worker ', cliente_recibido: $('▶️ Execute Workflow Trigger · Entrada del Worker').item.json.referencia || null } }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1152,
+        32
+      ],
+      "id": "61363da5-95c7-4b57-b469-626d60aa276d",
+      "name": "Salida - Exito1"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        -48
+      ],
+      "id": "ff45f6ca-7184-4f90-bbce-725c56a3e367",
+      "name": "▶️ Execute Workflow Trigger · Entrada del Worker"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        -96
+      ],
+      "id": "e72452c4-1d9c-4df7-821c-4c86ebb63066",
+      "name": "🏁 Salida del Worker"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1TNKxVjs4Sk4jrwj6kUycTc6COqMCUPOvUk35joTE-H8",
+          "mode": "list",
+          "cachedResultName": "KB_Atencion_Cliente",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TNKxVjs4Sk4jrwj6kUycTc6COqMCUPOvUk35joTE-H8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1661574142,
+          "mode": "list",
+          "cachedResultName": "KB_Atencion_Cliente.csv",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TNKxVjs4Sk4jrwj6kUycTc6COqMCUPOvUk35joTE-H8/edit#gid=1661574142"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        800,
+        192
+      ],
+      "id": "28150b7b-5e68-48df-bc58-606568d17e80",
+      "name": "Consulta Base de Datos",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wnZkbrG8FOc8s3Tl",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        496,
+        160
+      ],
+      "id": "da160105-d86a-4db4-9b3f-4c3779bc3d13",
+      "name": "AI - Asistente Consulta",
+      "credentials": {
+        "groqApi": {
+          "id": "GpAROU39IydOsSaH",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensaje_original }}",
+        "options": {
+          "systemMessage": "=Sos el asistente de atencion al cliente de la empresa. Respondes consultas usando UNICAMENTE la informacion de la base de conocimiento que te paso abajo.\n\nREGLAS:\n1. Si la respuesta esta en la base de conocimiento, respondela de forma clara y amable.\n2. Si la pregunta NO esta cubierta por la base, decis exactamente: 'No tengo esa informacion a mano, pero un asesor te va a ayudar a la brevedad.' No inventes datos.\n3. Responde en español rioplatense, breve y cordial. Texto plano, sin markdown.\n\nBASE DE CONOCIMIENTO: Google Sheet conectada en la entrada Tool. Puedes utilizar más de una columna de ser necesario"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        624,
+        -48
+      ],
+      "id": "049b58fb-0dd8-4673-9ec7-da13a0517a99",
+      "name": "Agente Consultas",
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "pinData": {
+    "▶️ Execute Workflow Trigger · Entrada del Worker": [
+      {
+        "json": {
+          "categoria": "consulta",
+          "referencia": 8263992155,
+          "mensaje_original": "hola, en qué horarios trabajan ?"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Salida - Exito": {
+      "main": [
+        [
+          {
+            "node": "🏁 Salida del Worker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salida - Exito1": {
+      "main": [
+        [
+          {
+            "node": "🏁 Salida del Worker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "▶️ Execute Workflow Trigger · Entrada del Worker": {
+      "main": [
+        [
+          {
+            "node": "Agente Consultas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consulta Base de Datos": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Consultas",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI - Asistente Consulta": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente Consultas",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente Consultas": {
+      "main": [
+        [
+          {
+            "node": "Salida - Exito",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Salida - Exito1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "856a4a66-7b04-4772-a124-f115a3974ab6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5bd91de9a9e3ca3738edab574228d588b043379ea8aa677f7f7e27b168c5e87f"
+  },
+  "nodeGroups": [],
+  "id": "DD7w0HLHSyrmq34C",
+  "tags": []
+}

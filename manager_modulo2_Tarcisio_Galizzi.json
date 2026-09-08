@@ -1,0 +1,1340 @@
+{
+  "name": "manager_modulo2_Tarcisio_Galizzi",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "# ROL\nSos un asistente virtual corporativo especializado en el triage y derivación de consultas de clientes. Tu tono es profesional, conciso y cordial.\n# ÁMBITO\nOperás exclusivamente en la recepción inicial de mensajes para una empresa de servicios. Atendés únicamente cuestiones vinculadas a:\n1. Consultas generales de producto o servicio.\n2. Ventas y solicitudes comerciales/cotizaciones.\n3. Facturación, pagos y estado de cuenta.\n# OBJETIVO\n1. Analizar el mensaje del usuario y clasificar la intención en una de las siguientes categorías exactas: 'consulta', 'venta', 'facturacion' o 'ninguna'.\n2. Registrar inmediatamente la clasificación utilizando la herramienta conectada (Google Sheets).\n4. Generar la salida de acuerdo al Output Parser: un objeto JSON con los campos \"categoria\" (uno de: consulta, venta, facturacion, ninguna).\n# REGLAS Y ESCALAMIENTO\n- Si la intención del usuario es ambigua o no encaja con las categorías principales, clasificá como 'ninguna' y derivá a atención humana.\n- Antes de emitir tu respuesta final, ejecutá siempre la herramienta de registro correspondiente.\n# PROHIBICIONES EXPLÍCITAS\n- PROHIBIDO inventar información sobre precios, contratos, saldos o políticas que no hayan sido provistas.\n- PROHIBIDO confirmar transacciones, procesar pagos o prometer reembolsos de forma directa.\n- PROHIBIDO responder o entablar conversación sobre temas fuera del ámbito corporativo (temas personales, política, programación, etc.).\n- PROHIBIDO utilizar giros de lenguaje inclusivo.",
+          "maxIterations": 5
+        }
+      },
+      "id": "92b1947d-b57f-414d-a681-992141cea99b",
+      "name": "Agente de Triage  Clasificador",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -32,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Usá esta herramienta para registrar el resultado del triage cuando clasifiques la intención del usuario. \nCategorías permitidas: 'consulta', 'venta', 'facturacion' o 'ninguna'.\nDebes pasar los campos: Fecha, Usuario, Categoria y Resumen de la consulta.",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KPLhOWho4G-f8yhJEqwtYKEq_aAKuiZYuK7z0a5_MjM",
+          "mode": "list",
+          "cachedResultName": "Log_Triage",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KPLhOWho4G-f8yhJEqwtYKEq_aAKuiZYuK7z0a5_MjM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Resumen",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13b_6dfLOdsIkT7GZvH9OW_trhA_m5pek6i4LsoN70sQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha": "={{ $json.message.date }}",
+            "Usuario": "={{ $json.message.chat.username }}",
+            "Categoria": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Categoria', ``, 'string') }}",
+            "Resumen": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Resumen', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Usuario",
+              "displayName": "Usuario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Resumen",
+              "displayName": "Resumen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "b761e95d-25f5-44d1-bb9c-1e78ecf2fda5",
+      "name": "Triage_Interacciones",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        32,
+        352
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wnZkbrG8FOc8s3Tl",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"categoria\": { \"type\": \"string\", \"enum\": [\"consulta\", \"venta\", \"facturacion\", \"ninguna\"]}\n  },\n  \"required\": [\"categoria\"]\n}",
+        "autoFix": true
+      },
+      "id": "0e136633-9a22-4096-ab2b-b3f5acbb17da",
+      "name": "Parser de Salida - Clasificador de mensajes",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        176,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Agente de Triage  Clasificador').item.json.output.categoria }}",
+                    "rightValue": "consulta",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "4b4fbf62-6c03-4e79-987b-bf68c5443286"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "consulta"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "10f8510b-c2ba-41b9-8d9f-6a439eaf6fd1",
+                    "leftValue": "={{ $('Agente de Triage  Clasificador').item.json.output.categoria }}",
+                    "rightValue": "venta",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "venta"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "7eefe955-5bb4-451c-9ed1-20bcc21dcbfe",
+                    "leftValue": "={{ $('Agente de Triage  Clasificador').item.json.output.categoria }}",
+                    "rightValue": "facturacion",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "facturacion"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "6587454f-2b15-428f-bbb5-8ebcefefb090",
+      "name": "Switch por categoria",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        496,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "18bfdca9-e115-4a44-80f4-07df1fe496dc",
+              "name": "categoria",
+              "value": "consulta",
+              "type": "string"
+            },
+            {
+              "id": "923dd6dc-bac7-4954-9e3b-4f979b056505",
+              "name": "referencia",
+              "value": "={{ $('When chat message received').item.json.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "38342e53-72c2-4180-ad84-4a1496e93190",
+              "name": "mensaje_original",
+              "value": "={{ $('When chat message received').item.json.chatInput }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        720,
+        -464
+      ],
+      "id": "b90537c9-b0e0-4a1a-9911-e8f587cd8c57",
+      "name": "Set - Consultas"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "db90eec0-743f-4702-9e36-178e10ed80c2",
+              "name": "categoria",
+              "value": "venta",
+              "type": "string"
+            },
+            {
+              "id": "f6912f0e-8f33-464c-a052-a86d94d67c85",
+              "name": "id_cliente",
+              "value": "={{ $('When chat message received').item.json.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "a74234ed-1b09-4973-bb0e-030c4231864a",
+              "name": "producto",
+              "value": "={{ $('When chat message received').item.json.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "e66d9d9a-4c8b-41d1-8ed9-34ec73cd1c98",
+              "name": "contexto_breve",
+              "value": "Lead calificado por el Agente de Triaje como oportunidad comercial (venta)",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        720,
+        -80
+      ],
+      "id": "cef2568d-1400-4dd2-ae1d-e84ea70af5dd",
+      "name": "Set - Venta"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BU70UMJ05",
+          "mode": "list",
+          "cachedResultName": "triage_logs"
+        },
+        "text": "=🆘 Petición dudosa sin categoría clara. Sesión: {{ $('When chat message received').item.json.sessionId }} · Mensaje: \"{{ $('When chat message received').item.json.chatInput }}\". Requiere intervención de un supervisor humano.",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        752,
+        592
+      ],
+      "id": "02c30248-b25d-4699-a7c6-468343bb433f",
+      "name": "Slack - Escalara a Supervisor Humano ",
+      "webhookId": "b45a187c-db3a-4387-82a0-bbce039ab68f",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "8niLVpVQdq9CrWpn",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "DD7w0HLHSyrmq34C",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/DD7w0HLHSyrmq34C",
+          "cachedResultName": "Worker1_modulo2_Consultas"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [
+            ""
+          ],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        944,
+        -464
+      ],
+      "id": "c2979dc5-03f3-49dd-b927-28cfbcfa97eb",
+      "name": "Call 'Worker 1 - Consultas'",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "722acb7b-1eb9-4cb3-8ae6-bba6dbf37be1",
+              "name": "worker_invocado",
+              "value": "Worker 1 - Consultas",
+              "type": "string"
+            },
+            {
+              "id": "418fd485-ac50-4b84-b27b-a87f5f6025e8",
+              "name": "categoria",
+              "value": "consulta",
+              "type": "string"
+            },
+            {
+              "id": "192740a1-1036-4c94-bce6-53db48212df5",
+              "name": "parametros_enviados",
+              "value": "={{ $('Set - Consultas').item.json.categoria }};{{ $('Set - Consultas').item.json.referencia }};{{ $('Set - Consultas').item.json.mensaje_original }}",
+              "type": "string"
+            },
+            {
+              "id": "2b9658f4-87a0-4ea3-8c25-5c56c01d25d1",
+              "name": "respuesta_recibida",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            },
+            {
+              "id": "da795e35-c896-4168-bde3-a13745ad8da5",
+              "name": "estado",
+              "value": "={{ $json.status }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1168,
+        -560
+      ],
+      "id": "a393cf85-7fbb-4d9f-9358-f960da5f8df1",
+      "name": "Log - Consulta OK"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "722acb7b-1eb9-4cb3-8ae6-bba6dbf37be1",
+              "name": "worker_invocado",
+              "value": "Worker 1 - Consultas",
+              "type": "string"
+            },
+            {
+              "id": "418fd485-ac50-4b84-b27b-a87f5f6025e8",
+              "name": "categoria",
+              "value": "consulta",
+              "type": "string"
+            },
+            {
+              "id": "192740a1-1036-4c94-bce6-53db48212df5",
+              "name": "parametros_enviados",
+              "value": "={{ $('Set - Consultas').item.json.categoria }};{{ $('Set - Consultas').item.json.referencia }};{{ $('Set - Consultas').item.json.mensaje_original }}",
+              "type": "string"
+            },
+            {
+              "id": "2b9658f4-87a0-4ea3-8c25-5c56c01d25d1",
+              "name": "respuesta_recibida",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            },
+            {
+              "id": "da795e35-c896-4168-bde3-a13745ad8da5",
+              "name": "estado",
+              "value": "=ERROR",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1168,
+        -368
+      ],
+      "id": "4ee591c3-858a-4f8b-9d4c-63b2602f3151",
+      "name": "Log - Consulta ERROR"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "722acb7b-1eb9-4cb3-8ae6-bba6dbf37be1",
+              "name": "worker_invocado",
+              "value": "Worker 2 - Venta",
+              "type": "string"
+            },
+            {
+              "id": "418fd485-ac50-4b84-b27b-a87f5f6025e8",
+              "name": "categoria",
+              "value": "venta",
+              "type": "string"
+            },
+            {
+              "id": "192740a1-1036-4c94-bce6-53db48212df5",
+              "name": "parametros_enviados",
+              "value": "={{ $('Set - Venta').item.json.categoria }};{{ $('Set - Venta').item.json.id_cliente }};{{ $('Set - Venta').item.json.producto }}",
+              "type": "string"
+            },
+            {
+              "id": "2b9658f4-87a0-4ea3-8c25-5c56c01d25d1",
+              "name": "respuesta_recibida",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            },
+            {
+              "id": "da795e35-c896-4168-bde3-a13745ad8da5",
+              "name": "estado",
+              "value": "={{ $json.status }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1168,
+        -176
+      ],
+      "id": "d7c188f1-8a97-435a-9fe8-65908908afde",
+      "name": "Log - Venta OK"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "722acb7b-1eb9-4cb3-8ae6-bba6dbf37be1",
+              "name": "worker_invocado",
+              "value": "Worker 1 - Consultas",
+              "type": "string"
+            },
+            {
+              "id": "418fd485-ac50-4b84-b27b-a87f5f6025e8",
+              "name": "categoria",
+              "value": "consulta",
+              "type": "string"
+            },
+            {
+              "id": "192740a1-1036-4c94-bce6-53db48212df5",
+              "name": "parametros_enviados",
+              "value": "={{ $('Set - Venta').item.json.categoria }};{{ $('Set - Venta').item.json.id_cliente }};{{ $('Set - Venta').item.json.producto }}",
+              "type": "string"
+            },
+            {
+              "id": "2b9658f4-87a0-4ea3-8c25-5c56c01d25d1",
+              "name": "respuesta_recibida",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            },
+            {
+              "id": "da795e35-c896-4168-bde3-a13745ad8da5",
+              "name": "estado",
+              "value": "=ERROR",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1168,
+        16
+      ],
+      "id": "2aed16c9-bd83-4d8b-9ea6-036d5d7f1c4b",
+      "name": "Log - Venta ERROR"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "722acb7b-1eb9-4cb3-8ae6-bba6dbf37be1",
+              "name": "worker_invocado",
+              "value": "Worker 1 - Consultas",
+              "type": "string"
+            },
+            {
+              "id": "418fd485-ac50-4b84-b27b-a87f5f6025e8",
+              "name": "categoria",
+              "value": "consulta",
+              "type": "string"
+            },
+            {
+              "id": "192740a1-1036-4c94-bce6-53db48212df5",
+              "name": "parametros_enviados",
+              "value": "={{ $('Set Facturacion').item.json.categoria }};{{ $('Set Facturacion').item.json.referencia }};{{ $('Set Facturacion').item.json.mensaje_original }}",
+              "type": "string"
+            },
+            {
+              "id": "2b9658f4-87a0-4ea3-8c25-5c56c01d25d1",
+              "name": "respuesta_recibida",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            },
+            {
+              "id": "da795e35-c896-4168-bde3-a13745ad8da5",
+              "name": "estado",
+              "value": "={{ $json.status }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1168,
+        208
+      ],
+      "id": "7f3c7e2a-b43e-44e9-b20d-4f6aeff4ca68",
+      "name": "Log - Facturacion OK"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "722acb7b-1eb9-4cb3-8ae6-bba6dbf37be1",
+              "name": "worker_invocado",
+              "value": "Worker 1 - Consultas",
+              "type": "string"
+            },
+            {
+              "id": "418fd485-ac50-4b84-b27b-a87f5f6025e8",
+              "name": "categoria",
+              "value": "facturacion",
+              "type": "string"
+            },
+            {
+              "id": "192740a1-1036-4c94-bce6-53db48212df5",
+              "name": "parametros_enviados",
+              "value": "={{ $('Set Facturacion').item.json.categoria }};{{ $('Set Facturacion').item.json.referencia }};{{ $('Set Facturacion').item.json.mensaje_original }}",
+              "type": "string"
+            },
+            {
+              "id": "2b9658f4-87a0-4ea3-8c25-5c56c01d25d1",
+              "name": "respuesta_recibida",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            },
+            {
+              "id": "da795e35-c896-4168-bde3-a13745ad8da5",
+              "name": "estado",
+              "value": "=ERROR",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1168,
+        400
+      ],
+      "id": "ee8c89c9-73a9-438e-b0c4-5bca1eeaca8e",
+      "name": "Log - Facturacion ERROR"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "722acb7b-1eb9-4cb3-8ae6-bba6dbf37be1",
+              "name": "worker_invocado",
+              "value": "Ninguno - Error",
+              "type": "string"
+            },
+            {
+              "id": "418fd485-ac50-4b84-b27b-a87f5f6025e8",
+              "name": "categoria",
+              "value": "consulta",
+              "type": "string"
+            },
+            {
+              "id": "192740a1-1036-4c94-bce6-53db48212df5",
+              "name": "parametros_enviados",
+              "value": "={{ $('When chat message received').item.json.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "2b9658f4-87a0-4ea3-8c25-5c56c01d25d1",
+              "name": "respuesta_recibida",
+              "value": "=Ninguna - El agente de Triage no pudo clasificar la solicitud - Se solicita intervencion humana",
+              "type": "string"
+            },
+            {
+              "id": "da795e35-c896-4168-bde3-a13745ad8da5",
+              "name": "estado",
+              "value": "=ERROR",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1168,
+        592
+      ],
+      "id": "c1b724a4-451f-4220-9af8-64fba32b50c2",
+      "name": "Log - Escalar Humano"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "20Da9e0LXvxg0XK1",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/20Da9e0LXvxg0XK1",
+          "cachedResultName": "Worker2_modulo2_Venta"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        944,
+        -80
+      ],
+      "id": "50e41691-e839-4080-b420-9656a586396a",
+      "name": "Call 'Worker 2 - Venta'",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6a830863-c61c-4dc8-8546-0cd2de9c841a",
+              "name": "categoria",
+              "value": "facturacion",
+              "type": "string"
+            },
+            {
+              "id": "712739e1-c04e-4cfb-8729-828382ae0af9",
+              "name": "referencia",
+              "value": "={{ $('When chat message received').item.json.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "b939d88c-105e-4206-aa92-b482e856db4d",
+              "name": "mensaje_original",
+              "value": "={{ $('When chat message received').item.json.chatInput }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        720,
+        304
+      ],
+      "id": "ff231fcd-7156-44a6-83cd-d1761850643b",
+      "name": "Set Facturacion"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "zZgwU4dxgpzFHkPr",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/zZgwU4dxgpzFHkPr",
+          "cachedResultName": "Worker3_modulo2_Facturacion"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        944,
+        304
+      ],
+      "id": "6583fa54-5d0c-4f84-a233-2def5d72506e",
+      "name": "Call 'Worker 3 - Facturacion'",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -256,
+        112
+      ],
+      "id": "401056e2-a5a6-4abe-84b1-3c56ed329ce2",
+      "name": "When chat message received",
+      "webhookId": "f3659b9f-30d7-4d17-bf0f-e9506a6b05b0"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        352
+      ],
+      "id": "0f9c6b38-fff3-41a0-9da2-a58eb3d9bb6b",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "88f2f6ea-2570-487e-bd73-84a94d71e336",
+              "name": "respuesta_al_usuario",
+              "value": "={{ $json.respuesta_worker }}",
+              "type": "string"
+            },
+            {
+              "id": "6134a501-036c-43a1-915c-046230f7e4e9",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1616,
+        16
+      ],
+      "id": "2e69e1b1-8c25-43b8-aa41-bf2e9d7b468f",
+      "name": "Respuesta"
+    },
+    {
+      "parameters": {
+        "content": "## Agente de Triage Modulo 1 \n**Se corrige entrada para Chat y trigger y se utiliza modulo IA Open AI gpt 4.o"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -32,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "33bf9339-238d-4111-a771-5f1937c5c523",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Switch de clasificacion \n",
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        336,
+        -32
+      ],
+      "typeVersion": 1,
+      "id": "71074713-ed5f-4e4e-ba66-dab8f3fabc50",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Mitigación del pasillo de la muerte \n**Se pasan a los worker la minima cantidad de datos viable**",
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        768,
+        -656
+      ],
+      "typeVersion": 1,
+      "id": "c43902bb-08d4-4938-8e78-003d037239da",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Salida y Log de ejecución \n**Guardado de datos en cada consulta realizada** ",
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1440,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "7f8d9b7b-97f6-4094-963b-b42a574abe24",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Via de escape\n**Si el agente no reconoce una categoria, envia un mensaje a Slack y escala a Humano** ",
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        880,
+        656
+      ],
+      "typeVersion": 1,
+      "id": "8667fa69-ed1f-4c09-9c3b-30089316152c",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KPLhOWho4G-f8yhJEqwtYKEq_aAKuiZYuK7z0a5_MjM",
+          "mode": "list",
+          "cachedResultName": "Log_Triage",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KPLhOWho4G-f8yhJEqwtYKEq_aAKuiZYuK7z0a5_MjM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 214964328,
+          "mode": "list",
+          "cachedResultName": "Log - Completo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KPLhOWho4G-f8yhJEqwtYKEq_aAKuiZYuK7z0a5_MjM/edit#gid=214964328"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha": "={{ $now }}",
+            "Usuario": "={{ $('When chat message received').item.json.sessionId }}",
+            "Categoria": "={{ $('Agente de Triage  Clasificador').item.json.output.categoria }}",
+            "Mensaje_usuario": "={{ $('When chat message received').item.json.chatInput }}",
+            "respuesta_worker": "={{ $json.respuesta_recibida }}",
+            "status": "={{ $json.estado }}",
+            "worker_invocado": "={{ $json.worker_invocado }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Usuario",
+              "displayName": "Usuario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Mensaje_usuario",
+              "displayName": "Mensaje_usuario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "worker_invocado",
+              "displayName": "worker_invocado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "respuesta_worker",
+              "displayName": "respuesta_worker",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1392,
+        16
+      ],
+      "id": "27a6c1bc-9b34-4c15-8df9-433d71d3abbb",
+      "name": "Log de Registro",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wnZkbrG8FOc8s3Tl",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Agente de Triage  Clasificador": {
+      "main": [
+        [
+          {
+            "node": "Switch por categoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Triage_Interacciones": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente de Triage  Clasificador",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser de Salida - Clasificador de mensajes": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Agente de Triage  Clasificador",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch por categoria": {
+      "main": [
+        [
+          {
+            "node": "Set - Consultas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set - Venta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Facturacion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack - Escalara a Supervisor Humano ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set - Consultas": {
+      "main": [
+        [
+          {
+            "node": "Call 'Worker 1 - Consultas'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Worker 1 - Consultas'": {
+      "main": [
+        [
+          {
+            "node": "Log - Consulta OK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log - Consulta ERROR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log - Consulta OK": {
+      "main": [
+        [
+          {
+            "node": "Log de Registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log - Consulta ERROR": {
+      "main": [
+        [
+          {
+            "node": "Log de Registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set - Venta": {
+      "main": [
+        [
+          {
+            "node": "Call 'Worker 2 - Venta'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log - Venta OK": {
+      "main": [
+        [
+          {
+            "node": "Log de Registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log - Venta ERROR": {
+      "main": [
+        [
+          {
+            "node": "Log de Registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log - Facturacion OK": {
+      "main": [
+        [
+          {
+            "node": "Log de Registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log - Facturacion ERROR": {
+      "main": [
+        [
+          {
+            "node": "Log de Registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log - Escalar Humano": {
+      "main": [
+        [
+          {
+            "node": "Log de Registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack - Escalara a Supervisor Humano ": {
+      "main": [
+        [
+          {
+            "node": "Log - Escalar Humano",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Worker 2 - Venta'": {
+      "main": [
+        [
+          {
+            "node": "Log - Venta OK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log - Venta ERROR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Facturacion": {
+      "main": [
+        [
+          {
+            "node": "Call 'Worker 3 - Facturacion'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Worker 3 - Facturacion'": {
+      "main": [
+        [
+          {
+            "node": "Log - Facturacion OK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log - Facturacion ERROR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Agente de Triage  Clasificador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente de Triage  Clasificador",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Parser de Salida - Clasificador de mensajes",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log de Registro": {
+      "main": [
+        [
+          {
+            "node": "Respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d37affc9-9f73-4286-90b2-2a4201358101",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5bd91de9a9e3ca3738edab574228d588b043379ea8aa677f7f7e27b168c5e87f"
+  },
+  "nodeGroups": [],
+  "id": "a8GtYVPGHppVIBjZ",
+  "tags": []
+}
